@@ -5,11 +5,6 @@ metadata:
   namespace: sns
 spec:
   replicas: 1
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
   selector:
     matchLabels:
       app: image-server
@@ -20,19 +15,17 @@ spec:
     spec:
       volumes:
         - name: image-volume
-          persistentVolumeClaim:
-            claimName: image-volume-claim
+          emptyDir: {}
       containers:
-        - name: image
-          image: 638597541124.dkr.ecr.ap-northeast-2.amazonaws.com/image-server:0.0.3
+        - name: image-container
+          image: jheo/msa-image-server:1.0.0
+          imagePullPolicy: Always
           volumeMounts:
             - name: image-volume
               mountPath: /images
           env:
             - name: SPRING_PROFILES_ACTIVE
-              value: dev
-            - name: IMAGE_PATH
-              value: images
+              value: k8s
           resources:
             requests:
               memory: "512Mi"
@@ -44,18 +37,3 @@ spec:
             preStop:
               exec:
                 command: ["/bin/sh","-c","sleep 10"]
-          readinessProbe:
-            httpGet:
-              path: /healthcheck/ready
-              port: 8080
-            initialDelaySeconds: 30
-            periodSeconds: 1
-            successThreshold: 1
-            failureThreshold: 3
-          livenessProbe:
-            httpGet:
-              path: /healthcheck/live
-              port: 8080
-            initialDelaySeconds: 30
-            periodSeconds: 1
-            failureThreshold: 7

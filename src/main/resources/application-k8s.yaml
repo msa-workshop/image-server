@@ -1,7 +1,7 @@
 server:
-  port: 6080
+  port: 8080
 images:
-  upload-root: ./image
+  upload-root: /images
 spring:
   servlet:
     multipart:
